@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef } from "react";
 
 import { copy, linkIcon, loader, tick } from "../assets";
 import { useLazyGetSummaryQuery } from "../services/article";
 import { RxCrossCircled } from "react-icons/rx";
+import { HiOutlineSpeakerWave } from "react-icons/hi2";
+import { RxResume } from "react-icons/rx";
+import { FaRegCircleStop } from "react-icons/fa6";
+
 const Demo = () => {
   const [article, setArticle] = useState({
     url: "",
@@ -10,6 +14,9 @@ const Demo = () => {
   });
   const [allArticles, setAllArticles] = useState([]);
   const [copied, setCopied] = useState("");
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [currentPosition, setCurrentPosition] = useState(0);
+  const utteranceRef = useRef(null);
 
   // RTK lazy query
   const [getSummary, { error, isFetching }] = useLazyGetSummaryQuery();
@@ -63,6 +70,23 @@ const Demo = () => {
     const updatedAllArticles = allArticles.filter((item) => item.url !== url);
     setAllArticles(updatedAllArticles);
     localStorage.setItem("articles", JSON.stringify(updatedAllArticles));
+  };
+
+  const handleTTS = () => {
+    if (article.summary) {
+      setIsSpeaking(true);
+      const utterance = new SpeechSynthesisUtterance(article.summary.slice(currentPosition));
+      utteranceRef.current = utterance;
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onboundary = (event) => {
+        setCurrentPosition(event.charIndex);
+      };
+      speechSynthesis.speak(utterance);
+    }
+  };
+  const handleStopTTS = () => {
+    setIsSpeaking(true);
+    speechSynthesis.cancel();
   };
 
   return (
@@ -146,6 +170,26 @@ const Demo = () => {
                   {article.summary}
                 </p>
               </div>
+            <div className="flex items-center justify-between">  <button onClick={handleTTS} className='mt-4 tts_btn'>
+               
+                {isSpeaking ? <RxResume /> : <HiOutlineSpeakerWave  />}
+              </button>
+              {isSpeaking && (
+                <button onClick={handleStopTTS} className='mt-4 stop_tts_btn'>
+                <FaRegCircleStop  />
+                </button>
+                
+              )}
+
+              <div className='copy_btn' onClick={() => handleCopy(article.summary)}>
+                <img
+                  src={copied === article.summary ? tick : copy}
+                  alt={copied === article.summary ? "tick_icon" : "copy_icon"}
+                  className='w-[40%] h-[40%] object-contain'
+                />
+              </div>
+</div>
+
             </div>
           )
         )}
@@ -155,3 +199,4 @@ const Demo = () => {
 };
 
 export default Demo;
+

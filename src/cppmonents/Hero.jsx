@@ -7,7 +7,7 @@ const Hero = () => {
 <nav className='flex justify-between item-center w-full mb-10 pt-3'>
 <img src={logo} alt='sumz_logo' className='w-28 object-contain'></img>
 
-<button type='button'  onClick={()=>window.open()} className='black_btn'>Github </button>
+<button type='button'  onClick={()=>window.open("https://github.com/DEVESH1709/AI_Summarizer.git")} className='black_btn'>Github </button>
 
 </nav>
 
